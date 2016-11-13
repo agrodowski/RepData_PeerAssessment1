@@ -185,7 +185,7 @@ dataOk[, stepsperday := sum(steps), by=date]</code></pre>
         xlab(&quot;steps per day&quot;) +
         ggtitle(&quot;Total number of steps per day&quot;)
 g</code></pre>
-<p><img src="PA1_template_files/figure-html/histogram%20steps%20per%20day-1.png" width="672" /></p>
+<p><img src="PA1_template_files/figure-html/histogram%20steps%20per%20day-1.png" /><!-- --></p>
 <p>In addition, the mean and the median of the total number of steps per day are computed.</p>
 <pre class="r"><code>mean1 &lt;- mean(dataOk$stepsperday)
 mean1</code></pre>
@@ -203,7 +203,7 @@ g &lt;- ggplot(meanPerInterval, aes(x=interval,y=V1)) +
         ylab(&quot;steps (mean)&quot;) +
         ggtitle(&quot;Average number of steps across all days per interval&quot;)
 g</code></pre>
-<p><img src="PA1_template_files/figure-html/daily%20activity-1.png" width="672" /></p>
+<p><img src="PA1_template_files/figure-html/daily%20activity-1.png" /><!-- --></p>
 <p>Next, the interval with the maximum number of steps () can be computed in the following way:</p>
 <pre class="r"><code>meanPerInterval[V1 == max(V1)]</code></pre>
 <pre><code>##    interval       V1
@@ -245,12 +245,12 @@ g &lt;- ggplot(dataCombined, aes(stepsperday,fill = origin)) +
         xlab(&quot;steps per day&quot;) +
         ggtitle(&quot;Total number of steps per day&quot;)
 g</code></pre>
-<p><img src="PA1_template_files/figure-html/histogram%20steps%20comparison%20between%20datasets-1.png" width="672" /></p>
+<p><img src="PA1_template_files/figure-html/histogram%20steps%20comparison%20between%20datasets-1.png" /><!-- --></p>
 <p>We observe that the data-set with missing step values substituted with the mean value of steps of a corresponding interval has the increased number of steps around the mean value.</p>
 <p>Next, we are going to compare the quantiles between the two data-sets using boxplot.</p>
 <pre class="r"><code>g &lt;- ggplot(dataCombined, aes(y = stepsperday, x = origin)) + geom_boxplot()
 g</code></pre>
-<p><img src="PA1_template_files/figure-html/boxplot%20steps%20comparison%20between%20datasets-1.png" width="672" /></p>
+<p><img src="PA1_template_files/figure-html/boxplot%20steps%20comparison%20between%20datasets-1.png" /><!-- --></p>
 <p>We observe that the mean value is identical between these two data-sets, but the median is not.</p>
 <pre class="r"><code>mean2 &lt;- mean(data$stepsperday)
 mean2</code></pre>
@@ -359,7 +359,7 @@ g &lt;- ggplot(meanPerInterval2, aes(x=interval,y=V1), group = datetype) +
         ggtitle(&quot;Average number of steps across weekdays and weekends per interval&quot;) +
         facet_grid(datetype ~ .)
 g</code></pre>
-<p><img src="PA1_template_files/figure-html/daily%20activities%20per%20weekday%20or%20weekend-1.png" width="672" /></p>
+<p><img src="PA1_template_files/figure-html/daily%20activities%20per%20weekday%20or%20weekend-1.png" /><!-- --></p>
 <p>The average number of steps is higher afternoon during the weekend than it is during weekdays. At the same time, morning average (intervals between 5:00 - 10:00) is lower.</p>
 </div>
 

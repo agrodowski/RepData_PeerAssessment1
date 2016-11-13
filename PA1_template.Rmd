@@ -4,6 +4,7 @@ author: Adam Grodowski (adam.grodowski@gmail.com)
 date: November 13th, 2016
 output: 
   html_document: 
+    keep_md: yes
     self_contained: no
 ---
 
