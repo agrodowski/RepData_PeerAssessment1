@@ -1,25 +1,178 @@
 ---
 title: "Reproducible Research: Peer Assessment 1"
+author: Adam Grodowski (adam.grodowski@gmail.com)
+date: November 13th, 2016
 output: 
-  html_document:
-    keep_md: true
+  html_document: 
+    self_contained: no
 ---
+
+## Prerequisites
+
+This assignment has been made using embedded knit HTML function of R Studio version 1.0.44, Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_1) AppleWebKit/602.2.14 (KHTML, like Gecko), with the following session information:
+
+- R version 3.3.2 (2016-10-31)
+- Platform: x86_64-apple-darwin16.1.0 (64-bit)
+- Running under: macOS Sierra 10.12.1
+- locale: en_GB.UTF-8/en_GB.UTF-8/en_GB.UTF-8/C/en_GB.UTF-8/en_GB.UTF-8
+- attached base packages: stats, graphics, grDevices, utils, datasets, methods, base
+- other attached packages: knitr_1.15, ggplot2_2.2.0, data.table_1.9.6
 
 
 ## Loading and preprocessing the data
 
+Since raw data bundle is already provided, we proceed directly to decompression step followed by reading data from CSV file and type conversions. 
 
+There are three variables provided: ***steps*** (integer), ***date*** (Date as character) and ***interval*** (integer). 
+
+```{r, label = "loading", echo = TRUE}
+require(data.table)
+unzip("activity.zip")
+data <- fread("activity.csv",
+            colClasses=c("numeric","character","integer"),
+            header=T)
+#data$time <- as.POSIXct(paste(data$date, sprintf("%04d", data$interval)), format="%Y-%m-%d %H%M")
+#data[ ,c("date","interval") := NULL]
+```
+
+There are `r nrow(data)` observations loaded, with the following summary:
+```{r, echo = TRUE}
+summary(data)
+```
 
 ## What is mean total number of steps taken per day?
+We start with computing the total number of steps taken per day. For this part of the assignment, all missing values are ignored.
+```{r label = "the total number of steps taken per day", echo=TRUE}
+dataOk <- na.omit(data, col="steps")
+dataOk[, stepsperday := sum(steps), by=date]
+```
 
+The following histogram illustrates the total number of steps taken per day.
+```{r, label = "histogram steps per day", echo = TRUE}
+require(ggplot2)
+g <- ggplot(dataOk, aes(stepsperday)) +
+        geom_histogram(binwidth = 5000) +
+        xlab("steps per day") +
+        ggtitle("Total number of steps per day")
+g
+```
 
+In addition, the mean and the median of the total number of steps per day are
+computed.
+```{r label = "mean and median", echo = TRUE}
+mean1 <- mean(dataOk$stepsperday)
+mean1
+median1 <- median(dataOk$stepsperday)
+median1
+```
 
 ## What is the average daily activity pattern?
+The following time series plot illustrates the average number of steps across all days per interval.
+```{r label="daily activity"}
+meanPerInterval <- dataOk[, mean(steps), by = interval]
+g <- ggplot(meanPerInterval, aes(x=interval,y=V1)) +
+        geom_line() +
+        ylab("steps (mean)") +
+        ggtitle("Average number of steps across all days per interval")
+g
+```
 
-
+Next, the interval with the maximum number of steps (`r meanPerInterval[V1 == max(V1)]`) can be computed in 
+the following way:
+```{r, echo = TRUE}
+meanPerInterval[V1 == max(V1)]
+```
 
 ## Imputing missing values
+There are `r nrow(data[is.na(steps)])` observations with missing steps, as computed below:
+```{r, echo = TRUE}
+nrow(data[is.na(steps)])
+```
+
+We are going to approximate missing number of steps using average number of steps across all days per interval, computed in the previous paragraph. We will use function 'set' in a loop per each unique value of interval, and we will refer to the columns by their index.
+```{r, echo = TRUE}
+for(i in unique(data$interval)) {
+    # set all NA steps which belong to a certain interval 'i'
+    set(data,which(is.na(data[[1]]) & i == data[[3]]),1L, 
+        meanPerInterval[interval == i]$V1)
+        #0)
+}
+```
+
+Once all missing values are substituted, we will plot two histograms to quickly determine the change. We will combine two data-sets (with and without missing values) into one and create a type variable to designate the origin of a data-set. 
+```{r, echo = TRUE}
+# create the new origin variable
+data[, stepsperday := sum(steps), by=date]
+data$origin <- 'with missing values imputed'
+dataOk$origin <- 'with missing values ignored'
+```
+
+```{r, label = "histogram steps comparison between datasets", echo = TRUE}
+# combine into a new data-set
+dataCombined <- rbind(dataOk, data)
+g <- ggplot(dataCombined, aes(stepsperday,fill = origin)) +
+        geom_histogram(binwidth = 5000, alpha = 0.5, position="identity") +
+        xlab("steps per day") +
+        ggtitle("Total number of steps per day")
+g
+```
+
+We observe that the data-set with missing step values substituted with the mean value of steps of a corresponding interval has the increased number of steps around the mean value.
+
+Next, we are going to compare the quantiles between the two data-sets using boxplot.
+```{r, label = "boxplot steps comparison between datasets", echo = TRUE}
+g <- ggplot(dataCombined, aes(y = stepsperday, x = origin)) + geom_boxplot()
+g
+```
 
 
+We observe that the mean value is identical between these two data-sets, but the median is not.
+```{r, echo = TRUE}
+mean2 <- mean(data$stepsperday)
+mean2
+mean2 - mean1
+
+median2 <- median(data$stepsperday)
+median2
+median2 - median1
+```
+
+Adding some non-zero values of steps in place of NA values has altered the distribution but not the mean value. To prove that, lets divide our initial set (with ignored NA steps) into a mutually exclusive interval sub-sets, and lets compute the mean value of steps for every interval *i*, where the *steps~i~* is the sum of all steps of the interval *i* and *n* is the number of non-NA steps within the interval *i*. 
+$$
+\mu_{i} = \dfrac {steps_i}{n}
+$$
+Next, lets divide our set of the steps with the imputed NA steps. As assumed before - we are going to replace every NA value with the mean value of all steps of the corresponding interval. As shown below, the mean value of the interval sub-set does not change, and therefore, the mean value of all steps neither does. The number of NA steps within the interval *i* is denoted as *na*, and the number of non-NA steps within the interval *i* is denoted as *n*.
+$$
+\mu'_{i} 
+    = \dfrac {steps_i + na*\mu_{int}} {n + na} 
+    = \dfrac {steps_i + na*(\dfrac {steps_i}{n})} {n + na} 
+    = \dfrac {n*\dfrac {steps_i}{n} + na*\dfrac {steps_i}{n}} {n + na}
+    = \dfrac {n+na}{n+na}*\dfrac {steps_i}{n}
+    = 1*\mu_{int} = \mu_{int}
+$$
 
 ## Are there differences in activity patterns between weekdays and weekends?
+
+The following code creates a factor variable 'datetype' with two values: 
+weekday and weekend.
+```{r, echo = TRUE}
+data[, datetype := 'weekday']
+data[weekdays(as.Date(date)) %in% c("Saturday","Sunday"), datetype := 'weekend']
+data[, dateype := as.factor(datetype)]
+```
+
+In order to compare weekends with workdays, we will plot again the average
+number of step across all weekend and all workdays per interval in two plots
+```{r, label="daily activities per weekday or weekend", echo = TRUE}
+meanPerInterval2 <- data[, mean(steps), by = list(interval,datetype)]
+g <- ggplot(meanPerInterval2, aes(x=interval,y=V1), group = datetype) +
+        geom_line() +
+        ylab("steps (mean)") +
+        ggtitle("Average number of steps across weekdays and weekends per interval") +
+        facet_grid(datetype ~ .)
+g
+```
+
+The average number of steps is higher afternoon during the weekend than it is
+during weekdays. At the same time, morning average (intervals between 
+5:00 - 10:00) is lower.

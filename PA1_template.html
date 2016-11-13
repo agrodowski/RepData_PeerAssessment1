@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+
+<meta name="author" content="Adam Grodowski (adam.grodowski@gmail.com)" />
+
+
+<title>Reproducible Research: Peer Assessment 1</title>
+
+<script src="PA1_template_files/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="PA1_template_files/bootstrap-3.3.5/css/bootstrap.min.css" rel="stylesheet" />
+<script src="PA1_template_files/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="PA1_template_files/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="PA1_template_files/bootstrap-3.3.5/shim/respond.min.js"></script>
+
+<style type="text/css">code{white-space: pre;}</style>
+<link rel="stylesheet"
+      href="PA1_template_files/highlight/default.css"
+      type="text/css" />
+<script src="PA1_template_files/highlight/highlight.js"></script>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+<script type="text/javascript">
+if (window.hljs && document.readyState && document.readyState === "complete") {
+   window.setTimeout(function() {
+      hljs.initHighlighting();
+   }, 0);
+}
+</script>
+
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+
+</head>
+
+<body>
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+  height: auto;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+</style>
+
+
+
+<div class="container-fluid main-container">
+
+<!-- tabsets -->
+<script src="PA1_template_files/navigation-1.1/tabsets.js"></script>
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+</script>
+
+<!-- code folding -->
+
+
+
+
+
+
+<div class="fluid-row" id="header">
+
+
+
+<h1 class="title toc-ignore">Reproducible Research: Peer Assessment 1</h1>
+<h4 class="author"><em>Adam Grodowski (<a href="mailto:adam.grodowski@gmail.com">adam.grodowski@gmail.com</a>)</em></h4>
+<h4 class="date"><em>November 13th, 2016</em></h4>
+
+</div>
+
+
+<div id="prerequisites" class="section level2">
+<h2>Prerequisites</h2>
+<p>This assignment has been made using embedded knit HTML function of R Studio version 1.0.44, Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_1) AppleWebKit/602.2.14 (KHTML, like Gecko), with the following session information:</p>
+<ul>
+<li>R version 3.3.2 (2016-10-31)</li>
+<li>Platform: x86_64-apple-darwin16.1.0 (64-bit)</li>
+<li>Running under: macOS Sierra 10.12.1</li>
+<li>locale: en_GB.UTF-8/en_GB.UTF-8/en_GB.UTF-8/C/en_GB.UTF-8/en_GB.UTF-8</li>
+<li>attached base packages: stats, graphics, grDevices, utils, datasets, methods, base</li>
+<li>other attached packages: knitr_1.15, ggplot2_2.2.0, data.table_1.9.6</li>
+</ul>
+</div>
+<div id="loading-and-preprocessing-the-data" class="section level2">
+<h2>Loading and preprocessing the data</h2>
+<p>Since raw data bundle is already provided, we proceed directly to decompression step followed by reading data from CSV file and type conversions.</p>
+<p>There are three variables provided: <strong><em>steps</em></strong> (integer), <strong><em>date</em></strong> (Date as character) and <strong><em>interval</em></strong> (integer).</p>
+<pre class="r"><code>require(data.table)</code></pre>
+<pre><code>## Loading required package: data.table</code></pre>
+<pre class="r"><code>unzip(&quot;activity.zip&quot;)
+data &lt;- fread(&quot;activity.csv&quot;,
+            colClasses=c(&quot;numeric&quot;,&quot;character&quot;,&quot;integer&quot;),
+            header=T)
+#data$time &lt;- as.POSIXct(paste(data$date, sprintf(&quot;%04d&quot;, data$interval)), format=&quot;%Y-%m-%d %H%M&quot;)
+#data[ ,c(&quot;date&quot;,&quot;interval&quot;) := NULL]</code></pre>
+<p>There are 17568 observations loaded, with the following summary:</p>
+<pre class="r"><code>summary(data)</code></pre>
+<pre><code>##      steps            date              interval     
+##  Min.   :  0.00   Length:17568       Min.   :   0.0  
+##  1st Qu.:  0.00   Class :character   1st Qu.: 588.8  
+##  Median :  0.00   Mode  :character   Median :1177.5  
+##  Mean   : 37.38                      Mean   :1177.5  
+##  3rd Qu.: 12.00                      3rd Qu.:1766.2  
+##  Max.   :806.00                      Max.   :2355.0  
+##  NA&#39;s   :2304</code></pre>
+</div>
+<div id="what-is-mean-total-number-of-steps-taken-per-day" class="section level2">
+<h2>What is mean total number of steps taken per day?</h2>
+<p>We start with computing the total number of steps taken per day. For this part of the assignment, all missing values are ignored.</p>
+<pre class="r"><code>dataOk &lt;- na.omit(data, col=&quot;steps&quot;)
+dataOk[, stepsperday := sum(steps), by=date]</code></pre>
+<pre><code>##        steps       date interval stepsperday
+##     1:     0 2012-10-02        0         126
+##     2:     0 2012-10-02        5         126
+##     3:     0 2012-10-02       10         126
+##     4:     0 2012-10-02       15         126
+##     5:     0 2012-10-02       20         126
+##    ---                                      
+## 15260:     0 2012-11-29     2335        7047
+## 15261:     0 2012-11-29     2340        7047
+## 15262:     0 2012-11-29     2345        7047
+## 15263:     0 2012-11-29     2350        7047
+## 15264:     0 2012-11-29     2355        7047</code></pre>
+<p>The following histogram illustrates the total number of steps taken per day.</p>
+<pre class="r"><code>require(ggplot2)</code></pre>
+<pre><code>## Loading required package: ggplot2</code></pre>
+<pre class="r"><code>g &lt;- ggplot(dataOk, aes(stepsperday)) +
+        geom_histogram(binwidth = 5000) +
+        xlab(&quot;steps per day&quot;) +
+        ggtitle(&quot;Total number of steps per day&quot;)
+g</code></pre>
+<p><img src="PA1_template_files/figure-html/histogram%20steps%20per%20day-1.png" width="672" /></p>
+<p>In addition, the mean and the median of the total number of steps per day are computed.</p>
+<pre class="r"><code>mean1 &lt;- mean(dataOk$stepsperday)
+mean1</code></pre>
+<pre><code>## [1] 10766.19</code></pre>
+<pre class="r"><code>median1 &lt;- median(dataOk$stepsperday)
+median1</code></pre>
+<pre><code>## [1] 10765</code></pre>
+</div>
+<div id="what-is-the-average-daily-activity-pattern" class="section level2">
+<h2>What is the average daily activity pattern?</h2>
+<p>The following time series plot illustrates the average number of steps across all days per interval.</p>
+<pre class="r"><code>meanPerInterval &lt;- dataOk[, mean(steps), by = interval]
+g &lt;- ggplot(meanPerInterval, aes(x=interval,y=V1)) +
+        geom_line() +
+        ylab(&quot;steps (mean)&quot;) +
+        ggtitle(&quot;Average number of steps across all days per interval&quot;)
+g</code></pre>
+<p><img src="PA1_template_files/figure-html/daily%20activity-1.png" width="672" /></p>
+<p>Next, the interval with the maximum number of steps () can be computed in the following way:</p>
+<pre class="r"><code>meanPerInterval[V1 == max(V1)]</code></pre>
+<pre><code>##    interval       V1
+## 1:      835 206.1698</code></pre>
+</div>
+<div id="imputing-missing-values" class="section level2">
+<h2>Imputing missing values</h2>
+<p>There are 2304 observations with missing steps, as computed below:</p>
+<pre class="r"><code>nrow(data[is.na(steps)])</code></pre>
+<pre><code>## [1] 2304</code></pre>
+<p>We are going to approximate missing number of steps using average number of steps across all days per interval, computed in the previous paragraph. We will use function ‘set’ in a loop per each unique value of interval, and we will refer to the columns by their index.</p>
+<pre class="r"><code>for(i in unique(data$interval)) {
+    # set all NA steps which belong to a certain interval &#39;i&#39;
+    set(data,which(is.na(data[[1]]) &amp; i == data[[3]]),1L, 
+        meanPerInterval[interval == i]$V1)
+        #0)
+}</code></pre>
+<p>Once all missing values are substituted, we will plot two histograms to quickly determine the change. We will combine two data-sets (with and without missing values) into one and create a type variable to designate the origin of a data-set.</p>
+<pre class="r"><code># create the new origin variable
+data[, stepsperday := sum(steps), by=date]</code></pre>
+<pre><code>##            steps       date interval stepsperday
+##     1: 1.7169811 2012-10-01        0    10766.19
+##     2: 0.3396226 2012-10-01        5    10766.19
+##     3: 0.1320755 2012-10-01       10    10766.19
+##     4: 0.1509434 2012-10-01       15    10766.19
+##     5: 0.0754717 2012-10-01       20    10766.19
+##    ---                                          
+## 17564: 4.6981132 2012-11-30     2335    10766.19
+## 17565: 3.3018868 2012-11-30     2340    10766.19
+## 17566: 0.6415094 2012-11-30     2345    10766.19
+## 17567: 0.2264151 2012-11-30     2350    10766.19
+## 17568: 1.0754717 2012-11-30     2355    10766.19</code></pre>
+<pre class="r"><code>data$origin &lt;- &#39;with missing values imputed&#39;
+dataOk$origin &lt;- &#39;with missing values ignored&#39;</code></pre>
+<pre class="r"><code># combine into a new data-set
+dataCombined &lt;- rbind(dataOk, data)
+g &lt;- ggplot(dataCombined, aes(stepsperday,fill = origin)) +
+        geom_histogram(binwidth = 5000, alpha = 0.5, position=&quot;identity&quot;) +
+        xlab(&quot;steps per day&quot;) +
+        ggtitle(&quot;Total number of steps per day&quot;)
+g</code></pre>
+<p><img src="PA1_template_files/figure-html/histogram%20steps%20comparison%20between%20datasets-1.png" width="672" /></p>
+<p>We observe that the data-set with missing step values substituted with the mean value of steps of a corresponding interval has the increased number of steps around the mean value.</p>
+<p>Next, we are going to compare the quantiles between the two data-sets using boxplot.</p>
+<pre class="r"><code>g &lt;- ggplot(dataCombined, aes(y = stepsperday, x = origin)) + geom_boxplot()
+g</code></pre>
+<p><img src="PA1_template_files/figure-html/boxplot%20steps%20comparison%20between%20datasets-1.png" width="672" /></p>
+<p>We observe that the mean value is identical between these two data-sets, but the median is not.</p>
+<pre class="r"><code>mean2 &lt;- mean(data$stepsperday)
+mean2</code></pre>
+<pre><code>## [1] 10766.19</code></pre>
+<pre class="r"><code>mean2 - mean1</code></pre>
+<pre><code>## [1] 0</code></pre>
+<pre class="r"><code>median2 &lt;- median(data$stepsperday)
+median2</code></pre>
+<pre><code>## [1] 10766.19</code></pre>
+<pre class="r"><code>median2 - median1</code></pre>
+<pre><code>## [1] 1.188679</code></pre>
+<p>Adding some non-zero values of steps in place of NA values has altered the distribution but not the mean value. To prove that, lets divide our initial set (with ignored NA steps) into a mutually exclusive interval sub-sets, and lets compute the mean value of steps for every interval <em>i</em>, where the <em>steps<sub>i</sub></em> is the sum of all steps of the interval <em>i</em> and <em>n</em> is the number of non-NA steps within the interval <em>i</em>. <span class="math display">\[
+\mu_{i} = \dfrac {steps_i}{n}
+\]</span> Next, lets divide our set of the steps with the imputed NA steps. As assumed before - we are going to replace every NA value with the mean value of all steps of the corresponding interval. As shown below, the mean value of the interval sub-set does not change, and therefore, the mean value of all steps neither does. The number of NA steps within the interval <em>i</em> is denoted as <em>na</em>, and the number of non-NA steps within the interval <em>i</em> is denoted as <em>n</em>. <span class="math display">\[
+\mu&#39;_{i} 
+    = \dfrac {steps_i + na*\mu_{int}} {n + na} 
+    = \dfrac {steps_i + na*(\dfrac {steps_i}{n})} {n + na} 
+    = \dfrac {n*\dfrac {steps_i}{n} + na*\dfrac {steps_i}{n}} {n + na}
+    = \dfrac {n+na}{n+na}*\dfrac {steps_i}{n}
+    = 1*\mu_{int} = \mu_{int}
+\]</span></p>
+</div>
+<div id="are-there-differences-in-activity-patterns-between-weekdays-and-weekends" class="section level2">
+<h2>Are there differences in activity patterns between weekdays and weekends?</h2>
+<p>The following code creates a factor variable ‘datetype’ with two values: weekday and weekend.</p>
+<pre class="r"><code>data[, datetype := &#39;weekday&#39;]</code></pre>
+<pre><code>##            steps       date interval stepsperday
+##     1: 1.7169811 2012-10-01        0    10766.19
+##     2: 0.3396226 2012-10-01        5    10766.19
+##     3: 0.1320755 2012-10-01       10    10766.19
+##     4: 0.1509434 2012-10-01       15    10766.19
+##     5: 0.0754717 2012-10-01       20    10766.19
+##    ---                                          
+## 17564: 4.6981132 2012-11-30     2335    10766.19
+## 17565: 3.3018868 2012-11-30     2340    10766.19
+## 17566: 0.6415094 2012-11-30     2345    10766.19
+## 17567: 0.2264151 2012-11-30     2350    10766.19
+## 17568: 1.0754717 2012-11-30     2355    10766.19
+##                             origin datetype
+##     1: with missing values imputed  weekday
+##     2: with missing values imputed  weekday
+##     3: with missing values imputed  weekday
+##     4: with missing values imputed  weekday
+##     5: with missing values imputed  weekday
+##    ---                                     
+## 17564: with missing values imputed  weekday
+## 17565: with missing values imputed  weekday
+## 17566: with missing values imputed  weekday
+## 17567: with missing values imputed  weekday
+## 17568: with missing values imputed  weekday</code></pre>
+<pre class="r"><code>data[weekdays(as.Date(date)) %in% c(&quot;Saturday&quot;,&quot;Sunday&quot;), datetype := &#39;weekend&#39;]</code></pre>
+<pre><code>##            steps       date interval stepsperday
+##     1: 1.7169811 2012-10-01        0    10766.19
+##     2: 0.3396226 2012-10-01        5    10766.19
+##     3: 0.1320755 2012-10-01       10    10766.19
+##     4: 0.1509434 2012-10-01       15    10766.19
+##     5: 0.0754717 2012-10-01       20    10766.19
+##    ---                                          
+## 17564: 4.6981132 2012-11-30     2335    10766.19
+## 17565: 3.3018868 2012-11-30     2340    10766.19
+## 17566: 0.6415094 2012-11-30     2345    10766.19
+## 17567: 0.2264151 2012-11-30     2350    10766.19
+## 17568: 1.0754717 2012-11-30     2355    10766.19
+##                             origin datetype
+##     1: with missing values imputed  weekday
+##     2: with missing values imputed  weekday
+##     3: with missing values imputed  weekday
+##     4: with missing values imputed  weekday
+##     5: with missing values imputed  weekday
+##    ---                                     
+## 17564: with missing values imputed  weekday
+## 17565: with missing values imputed  weekday
+## 17566: with missing values imputed  weekday
+## 17567: with missing values imputed  weekday
+## 17568: with missing values imputed  weekday</code></pre>
+<pre class="r"><code>data[, dateype := as.factor(datetype)]</code></pre>
+<pre><code>##            steps       date interval stepsperday
+##     1: 1.7169811 2012-10-01        0    10766.19
+##     2: 0.3396226 2012-10-01        5    10766.19
+##     3: 0.1320755 2012-10-01       10    10766.19
+##     4: 0.1509434 2012-10-01       15    10766.19
+##     5: 0.0754717 2012-10-01       20    10766.19
+##    ---                                          
+## 17564: 4.6981132 2012-11-30     2335    10766.19
+## 17565: 3.3018868 2012-11-30     2340    10766.19
+## 17566: 0.6415094 2012-11-30     2345    10766.19
+## 17567: 0.2264151 2012-11-30     2350    10766.19
+## 17568: 1.0754717 2012-11-30     2355    10766.19
+##                             origin datetype dateype
+##     1: with missing values imputed  weekday weekday
+##     2: with missing values imputed  weekday weekday
+##     3: with missing values imputed  weekday weekday
+##     4: with missing values imputed  weekday weekday
+##     5: with missing values imputed  weekday weekday
+##    ---                                             
+## 17564: with missing values imputed  weekday weekday
+## 17565: with missing values imputed  weekday weekday
+## 17566: with missing values imputed  weekday weekday
+## 17567: with missing values imputed  weekday weekday
+## 17568: with missing values imputed  weekday weekday</code></pre>
+<p>In order to compare weekends with workdays, we will plot again the average number of step across all weekend and all workdays per interval in two plots</p>
+<pre class="r"><code>meanPerInterval2 &lt;- data[, mean(steps), by = list(interval,datetype)]
+g &lt;- ggplot(meanPerInterval2, aes(x=interval,y=V1), group = datetype) +
+        geom_line() +
+        ylab(&quot;steps (mean)&quot;) +
+        ggtitle(&quot;Average number of steps across weekdays and weekends per interval&quot;) +
+        facet_grid(datetype ~ .)
+g</code></pre>
+<p><img src="PA1_template_files/figure-html/daily%20activities%20per%20weekday%20or%20weekend-1.png" width="672" /></p>
+<p>The average number of steps is higher afternoon during the weekend than it is during weekdays. At the same time, morning average (intervals between 5:00 - 10:00) is lower.</p>
+</div>
+
+
+
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+$(document).ready(function () {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+});
+
+
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
